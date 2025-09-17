@@ -1,5 +1,0 @@
-@import "@unocss/reset/tailwind.css";
-:root { color-scheme: light; }
-.dark { color-scheme: dark; }
-.prose :where(pre):not(:where(.not-prose *)) { background: #111827; color: #e5e7eb; padding: 1rem; border-radius: 0.5rem; overflow: auto; }
-code { background: #f3f4f6; padding: 0.125rem 0.25rem; border-radius: 0.25rem; }
