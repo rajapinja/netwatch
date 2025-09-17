@@ -1,0 +1,116 @@
+services:
+  netwatch-db:
+    image: postgres:15
+    container_name: netwatch-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: netwatch
+      TZ: Asia/Kolkata
+      PGTZ: Asia/Kolkata
+    volumes:
+      - netwatch_db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - backend
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@pg.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    ports:
+      - "5055:80"
+    networks:
+      - backend
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper
+    ports:
+      - '2181:2181'
+    networks:
+      - backend
+
+  kafka:
+    image: confluentinc/cp-kafka
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    ports:
+      - '9092:9092'       # for internal container use (PLAINTEXT)
+      - '29092:29092'     # for host access (PLAINTEXT_HOST)
+      - '39092:39092'      # laptop B over LAN
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092, PLAINTEXT_HOST://host.docker.internal:29092, PLAINTEXT_LAN://192.168.29.215:39092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092, PLAINTEXT_HOST://0.0.0.0:29092, PLAINTEXT_LAN://0.0.0.0:39092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP:   PLAINTEXT:PLAINTEXT, PLAINTEXT_HOST:PLAINTEXT, PLAINTEXT_LAN:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - backend
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2g
+        reservations:
+          memory: 1g
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - "8384:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    depends_on:
+      - kafka
+    networks:
+      - backend
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.1
+    container_name: keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"     # ✅ enable /health/live and /health/ready
+      KC_METRICS_ENABLED: "true"    # ✅ optional: /metrics for Prometheus
+    command: start-dev
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+    ports:
+      - "8383:8080"
+    networks:
+      - backend
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2g
+        reservations:
+          memory: 1g
+
+networks:
+  backend:
+
+volumes:
+  netwatch_db_data:
+  pgadmin_data:
+  zookeeper_data:
+  kafka_data:
+  keycloak_data:

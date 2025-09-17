@@ -1,0 +1,67 @@
+server:
+  port: 9394
+
+spring:
+  application:
+    name: netwatch
+
+  kafka:
+    bootstrap-servers: 192.168.29.215:39092
+    admin:
+      auto-create: true
+    topic:
+      live-packet-events: packet-events
+      live-netWatch-alerts: netwatch-alerts
+      live-top-ports: netwatch.top-ports
+      live-protocol-stats: netwatch.protocol-stats
+      live-top-talkers: netwatch.top-talkers
+      live-agent-heartbeat: netwatch.agent-heartbeat
+      live-raw-packets: netwatch.raw-packets
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/netwatch
+    username: postgres
+    password: admin
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate.jdbc.time_zone: GMT+05:30
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8383/realms/netwatch-realm
+      # Optional: jwk-set-uri if discovery blocked
+      # jwk-set-uri: http://localhost:8081/realms/netwatch/protocol/openid-connect/certs
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+      livenessState:
+        enabled: true
+      readinessState:
+          enabled: true
+    info:
+      enabled: true
+
+info:
+  app:
+    name: Netwatch Backend
+    description: Live Packet Monitor Application
+    version: 0.0.1-SNAPSHOT
+
+keycloak:
+  admin:
+    client-id: netwatch-api
+    client-secret: gA9xkHXpcEcn7P8hWLjfK9SOGDDnRLWR
+    username: admin
+    password: admin
+    server-url: http://localhost:8383
+    realm: netwatch-realm
