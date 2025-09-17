@@ -1,0 +1,24 @@
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: #e5e7eb;
+    background-color: #111827;
+  }
+  a:hover {
+    color: #c7d2fe;
+  }
+  button {
+    background-color: #1f2937;
+  }
+} 
